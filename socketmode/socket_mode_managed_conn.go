@@ -11,13 +11,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/slack-go/slack"
-	"github.com/slack-go/slack/internal/backoff"
-	"github.com/slack-go/slack/internal/misc"
-	"github.com/slack-go/slack/slackevents"
+	"github.com/evrone-erp/slack"
+	"github.com/evrone-erp/slack/internal/backoff"
+	"github.com/evrone-erp/slack/internal/misc"
+	"github.com/evrone-erp/slack/slackevents"
 
+	"github.com/evrone-erp/slack/internal/timex"
 	"github.com/gorilla/websocket"
-	"github.com/slack-go/slack/internal/timex"
 )
 
 // Run is a blocking function that connects the Slack Socket Mode API and handles all incoming
