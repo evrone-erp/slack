@@ -12,7 +12,8 @@ const (
 )
 
 type TeamResponse struct {
-	Team TeamInfo `json:"team"`
+	Team    TeamInfo    `json:"team,omitempty"`
+	Profile TeamProfile `json:"profile,omitempty"`
 	SlackResponse
 }
 
@@ -22,6 +23,31 @@ type TeamInfo struct {
 	Domain      string                 `json:"domain"`
 	EmailDomain string                 `json:"email_domain"`
 	Icon        map[string]interface{} `json:"icon"`
+}
+
+type TeamProfile struct {
+	Fields []struct {
+		Id             string   `json:"id"`
+		Ordering       int      `json:"ordering"`
+		Label          string   `json:"label"`
+		Hint           string   `json:"hint"`
+		Type           string   `json:"type"`
+		PossibleValues []string `json:"possible_values"`
+		Options        struct {
+			IsScim      bool `json:"is_scim"`
+			IsProtected bool `json:"is_protected"`
+		} `json:"options"`
+		IsHidden  bool   `json:"is_hidden"`
+		SectionId string `json:"section_id"`
+	} `json:"fields"`
+	Sections []struct {
+		Id          string `json:"id"`
+		TeamId      string `json:"team_id"`
+		SectionType string `json:"section_type"`
+		Label       string `json:"label"`
+		Order       int    `json:"order"`
+		IsHidden    bool   `json:"is_hidden"`
+	} `json:"sections"`
 }
 
 type LoginResponse struct {
@@ -111,6 +137,22 @@ func (api *Client) GetTeamInfoContext(ctx context.Context) (*TeamInfo, error) {
 		return nil, err
 	}
 	return &response.Team, nil
+}
+
+func (api *Client) GetTeamProfile() (*TeamProfile, error) {
+	return api.GetTeamProfileContext(context.Background())
+}
+
+func (api *Client) GetTeamProfileContext(ctx context.Context) (*TeamProfile, error) {
+	values := url.Values{
+		"token": {api.token},
+	}
+
+	response, err := api.teamRequest(ctx, "team.profile.get", values)
+	if err != nil {
+		return nil, err
+	}
+	return &response.Profile, nil
 }
 
 // GetAccessLogs retrieves a page of logins according to the parameters given

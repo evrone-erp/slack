@@ -166,3 +166,107 @@ func TestGetAccessLogs(t *testing.T) {
 		t.Fatal(ErrIncorrectResponse)
 	}
 }
+
+func getTeamProfile(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+	response := []byte(`{
+    "ok": true,
+    "profile": {
+        "fields": [
+            {
+                "id": "111111ABC",
+                "ordering": 0,
+                "label": "Phone extension",
+                "hint": "Enter the extension to reach your desk",
+                "type": "text",
+                "possible_values": null,
+                "options": {
+                    "is_scim": true,
+                    "is_protected": true
+                },
+                "is_hidden": false,
+                "section_id": "123ABC"
+            },
+            {
+                "id": "222222ABC",
+                "ordering": 1,
+                "label": "Date of birth",
+                "hint": "When you were born",
+                "type": "date",
+                "possible_values": null,
+                "options": {
+                    "is_scim": true,
+                    "is_protected": true
+                },
+                "is_hidden": true,
+                "section_id": "123ABC"
+            },
+            {
+                "id": "333333ABC",
+                "ordering": 2,
+                "label": "House",
+                "hint": "Put on the sorting hat",
+                "type": "options_list",
+                "possible_values": [
+                    "Gryffindor",
+                    "Hufflepuff",
+                    "Ravenclaw",
+                    "Slytherin"
+                ],
+                "options": {
+                    "is_scim": false,
+                    "is_protected": false
+                },
+                "is_hidden": false,
+                "section_id": "456DEF"
+            }
+        ],
+        "sections": [
+            {
+                "id": "123ABC",
+                "team_id": "T123456",
+                "section_type": "contact",
+                "label": "Contact Information",
+                "order": 1,
+                "is_hidden": true
+            },
+            {
+                "id": "456DEF",
+                "team_id": "T123456",
+                "section_type": "custom",
+                "label": "About Me",
+                "order": 2,
+                "is_hidden": true
+            }
+        ]
+    }
+}`)
+	rw.Write(response)
+}
+
+func TestGetTeamIProfile(t *testing.T) {
+	http.HandleFunc("/team.profile.get", getTeamProfile)
+
+	once.Do(startServer)
+	api := New("testing-token", OptionAPIURL("http://"+serverAddr+"/"))
+
+	teamProfile, err := api.GetTeamProfile()
+	if err != nil {
+		t.Errorf("Unexpected error: %s", err)
+		return
+	}
+
+	// t.Fatal refers to -> t.Errorf & return
+	if len(teamProfile.Fields) != 3 {
+		t.Fatal(ErrIncorrectResponse)
+	}
+	if len(teamProfile.Sections) != 2 {
+		t.Fatal(ErrIncorrectResponse)
+	}
+	if teamProfile.Fields[0].Id != "111111ABC" {
+		t.Fatal(ErrIncorrectResponse)
+	}
+	if teamProfile.Sections[0].Id != "123ABC" {
+		t.Fatal(ErrIncorrectResponse)
+	}
+}
