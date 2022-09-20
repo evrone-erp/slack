@@ -3,7 +3,6 @@ package slack
 import (
 	"context"
 	"encoding/json"
-	"net/url"
 )
 
 // SetUserProfile will set a profile for the provided user
@@ -13,24 +12,21 @@ func (api *Client) SetUserProfile(user string, profile *UserProfile) error {
 
 // SetUserProfileContext will set a profile for the provided user with a custom context
 func (api *Client) SetUserProfileContext(ctx context.Context, user string, profile *UserProfile) error {
-	jsonProfile, err := json.Marshal(profile)
+	jsonProfile, err := json.Marshal(map[string]interface{}{
+		"profile": profile,
+	})
 
 	if err != nil {
 		return err
 	}
 
-	values := url.Values{
-		"token":   {api.token},
-		"profile": {string(jsonProfile)},
-	}
-
-	// optional field. It should not be set if empty
+	path := "users.profile.set"
 	if user != "" {
-		values["user"] = []string{user}
+		path += "?user=" + user
 	}
 
 	response := &userResponseFull{}
-	if err = api.postMethod(ctx, "users.profile.set", values, response); err != nil {
+	if err = api.jsonMethod(ctx, path, jsonProfile, response); err != nil {
 		return err
 	}
 
